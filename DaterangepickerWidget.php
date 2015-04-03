@@ -60,6 +60,8 @@ function(start, end, label) {
 }
 JS;
 	
+	public $template = '<i class="glyphicon glyphicon-calendar fa fa-calendar"></i><span></span><b class="caret"></b>';
+	
 	/**
 	 * @inheritdoc
 	 */
@@ -111,7 +113,7 @@ JS;
 			
 		$view->registerJs("$init\njQuery('#{$this->options['id']}').daterangepicker($settings);");
 		echo Html::beginTag('div', $this->options);
-		echo '<i class="glyphicon glyphicon-calendar fa fa-calendar"></i><span></span><b class="caret"></b>';
+		echo $this->template;
 		
 		echo Html::hiddenInput($name.'[start]', isset($value['start'])?$value['start']:null, ['id'=>"{$id}_start"]);
 		echo Html::hiddenInput($name.'[end]', isset($value['end'])?$value['end']:null, ['id'=>"{$id}_end"]);

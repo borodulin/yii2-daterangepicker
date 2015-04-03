@@ -11,6 +11,7 @@ use yii\helpers\Html;
 use yii\web\JsExpression;
 use yii\helpers\ArrayHelper;
 use conquer\momentjs\MomentjsAsset;
+use yii\i18n\Formatter;
 
 class DaterangepickerWidget extends \yii\widgets\InputWidget
 {
@@ -44,6 +45,13 @@ class DaterangepickerWidget extends \yii\widgets\InputWidget
 	
 	public $ranges = [];
 	
+	public $startDate = "js:moment().subtract(29, 'days')";
+	public $endDate = "js:moment()";
+	
+	public $init = <<<JS
+$('#{id} span').html({start}.format('MMMM D, YYYY') + ' - ' + {end}.format('MMMM D, YYYY'));
+JS;
+	
 	public $onSelect = <<<JS
 function(start, end, label) {
 	$('#{start}').val(start.format('YYYY-MM-DDTHH:mm:ss'));
@@ -68,16 +76,14 @@ JS;
 	{
 		$view = $this->view;
 		$this->registerAssets($view);
-		
-		$settings = ArrayHelper::merge($this->localeSettings(), $this->settings);
+		if(!empty($this->settings))
+			$settings = ArrayHelper::merge($this->localeSettings(), $this->settings);
 		
 		if(empty($settings['ranges']))
 			$settings['ranges']=$this->defaultRanges();
 		
-		array_walk_recursive($settings, function(&$item){
-			if(is_string($item) && (strpos('js:', $item)==0)) 
-				$item = new JsExpression(substr($item,3));
-		});
+		$settings['startDate']=$this->startDate;
+		$settings['endDate']=$this->endDate;
 		
 		$id=$this->options['id'];
 		if ($this->hasModel()) {
@@ -87,20 +93,33 @@ JS;
 			$name=$this->name;
 			$value=$this->value;
 		}
-		if(isset($value['start']))
-			$settings['startDate']=$value['start'];
-		if(isset($value['end']))
-			$settings['endDate']=$value['end'];
-		
+		$formatter=\Yii::$app->formatter;
+		$settings['startDate']=isset($value['start'])?$formatter->asDatetime($value['start']):$this->startDate;
+		$settings['endDate']=isset($value['end'])?$formatter->asDatetime($value['end']):$this->endDate;
+
+		array_walk_recursive($settings, function(&$item){
+			if(is_string($item) && (strpos('js:', $item)==0))
+				$item = new JsExpression(substr($item,3));
+		});
+		if(!empty($this->init))
+			$init = strtr($this->init, [
+					'{id}'=>$id,
+					'{start}'=>$settings['startDate'],
+					'{end}'=>$settings['endDate'],
+			]);
+		else
+			$init='';
 		$settings=Json::encode($settings);
+		
 		if(!empty($this->onSelect))
 			$settings.=','.strtr($this->onSelect, [
 					'{start}'=>"{$id}_start",
 					'{end}'=>"{$id}_end",
 					'{id}'=>$id,
 			]);
-		$view->registerJs("jQuery('#{$htmlOptions['id']}').daterangepicker($settings);");
-		echo Html::beginTag('div',$this->htmlOptions);
+			
+		$view->registerJs("$init\njQuery('#{$this->options['id']}').daterangepicker($settings);");
+		echo Html::beginTag('div', $this->options);
 		echo '<i class="glyphicon glyphicon-calendar fa fa-calendar"></i><span></span><b class="caret"></b>';
 		
 		echo Html::hiddenInput($name.'[start]', isset($value['start'])?$value['start']:null, ['id'=>"{$id}_start"]);
@@ -120,7 +139,6 @@ JS;
 	
 	public function defaultRanges()
 	{
-		$formatter=\Yii::$app->formatter;
 		return [
 			'Today'=> "js:[moment().startOf('day'), moment()]",
 			'Yesterday'=> "js:[moment().subtract(1, 'days').startOf('day'), moment().subtract(1, 'days').endOf('day')]",

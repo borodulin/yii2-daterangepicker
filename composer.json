@@ -1,0 +1,31 @@
+{
+    "name": "conquer/daterangepicker",
+    "description": "Conquer Date Range Picker widget",
+    "keywords": ["yii2", "extension", "widget", "date", "range", "picker"],
+    "homepage": "https://github.com/borodulin/yii2-daterangepicker",
+    "type": "yii2-extension",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Andrey Borodulin",
+            "email": "borodulin@gmail.com",
+            "homepage": "https://github.com/borodulin/yii2-daterangepicker"
+        }
+    ],
+    "extra": {
+        "branch-alias": {
+          "dev-master": "1.0.0.x-dev"
+        }
+      },
+    "require": {
+    	"php": ">=5.4.0",
+    	"yiisoft/yii2": "*",
+    	"conquer/momentjs": "*",
+    	"bower-asset/bootstrap-daterangepicker": "~1.3.19"
+    },
+	"autoload": {
+		"psr-4": {
+			"conquer\\daterangepicker\\": ""
+		}
+	}
+}

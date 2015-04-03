@@ -2,7 +2,7 @@
 /**
  * @link https://github.com/borodulin/yii2-daterangepicker
  * @copyright Copyright (c) 2015 Andrey Borodulin
- * @license https://github.com/borodulin/yii2-daterangepicker/blob/master/LICENSE.md
+ * @license https://github.com/borodulin/yii2-daterangepicker/blob/master/LICENSE
  */
 namespace conquer\daterangepicker;
 

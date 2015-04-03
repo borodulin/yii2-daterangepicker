@@ -79,7 +79,7 @@ JS;
 		$id=$this->options['id'];
 		if ($this->hasModel()) {
 			$value = Html::getAttributeValue($this->model, $this->attribute);
-			$name = Html::getInputName($model, $attribute);			
+			$name = Html::getInputName($this->model, $this->attribute);			
 		} else {
 			$name=$this->name;
 			$value=$this->value;

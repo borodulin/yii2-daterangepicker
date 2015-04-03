@@ -61,15 +61,6 @@ function(start, end, label) {
 JS;
 	
 	/**
-	 * Initializes the widget.
-	 * If you override this method, make sure you call the parent implementation first.
-	 */
-	public function init()
-	{
-		parent::init();
-	}
-	
-	/**
 	 * @inheritdoc
 	 */
 	public function run()

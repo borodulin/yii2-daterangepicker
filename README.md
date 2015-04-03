@@ -14,12 +14,12 @@ The preferred way to install this extension is through [composer](http://getcomp
 To install, either run
 
 ```
-$ php composer.phar require conquer/codemirror "*"
+$ php composer.phar require conquer/daterangepicker "*"
 ```
 or add
 
 ```
-"conquer/codemirror": "*"
+"conquer/daterangepicker": "*"
 ```
 
 to the ```require``` section of your `composer.json` file.

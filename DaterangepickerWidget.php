@@ -9,8 +9,9 @@ namespace conquer\daterangepicker;
 use yii\helpers\Json;
 use yii\helpers\Html;
 use yii\web\JsExpression;
-use conquer;
 use yii\helpers\ArrayHelper;
+use conquer\momentjs\MomentjsAsset;
+
 class DaterangepickerWidget extends \yii\widgets\InputWidget
 {
 	
@@ -113,7 +114,7 @@ JS;
 	{
 		DaterangepickerAsset::register($view);
 		if($this->language){
-			conquer\momentjs\MomentjsAsset::$language=$this->language;
+			MomentjsAsset::$language=$this->language;
 		}
 	}
 	
@@ -133,7 +134,7 @@ JS;
 	public function localeSettings()
 	{
 		return [
-			'format' => conquer\momentjs\MomentjsAsset::fromPhpFormat(\Yii::$app->formatter->dateFormat),
+			'format' => MomentjsAsset::fromPhpFormat(\Yii::$app->formatter->dateFormat),
 			'locale' => [
 				'applyLabel' => $this->applyLabel,
 				'cancelLabel' => $this->cancelLabel,

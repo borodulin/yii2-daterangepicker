@@ -1,6 +1,6 @@
 {
     "name": "conquer/daterangepicker",
-    "description": "Conquer Date Range Picker widget",
+    "description": "Yii2 Date Range Picker widget",
     "keywords": ["yii2", "extension", "widget", "date", "range", "picker"],
     "homepage": "https://github.com/borodulin/yii2-daterangepicker",
     "type": "yii2-extension",

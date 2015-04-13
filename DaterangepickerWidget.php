@@ -4,6 +4,7 @@
  * @copyright Copyright (c) 2015 Andrey Borodulin
  * @license https://github.com/borodulin/yii2-daterangepicker/blob/master/LICENSE
  */
+
 namespace conquer\daterangepicker;
 
 use yii\helpers\Json;
@@ -13,6 +14,9 @@ use yii\helpers\ArrayHelper;
 use conquer\momentjs\MomentjsAsset;
 use yii\i18n\Formatter;
 
+/**
+ * @author Andrey Borodulin
+ */
 class DaterangepickerWidget extends \yii\widgets\InputWidget
 {
 	

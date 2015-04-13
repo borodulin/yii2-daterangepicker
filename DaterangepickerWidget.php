@@ -94,10 +94,6 @@ JS;
 		$settings['startDate']=isset($value['start'])?$formatter->asDatetime($value['start']):$this->startDate;
 		$settings['endDate']=isset($value['end'])?$formatter->asDatetime($value['end']):$this->endDate;
 
-		array_walk_recursive($settings, function(&$item){
-			if(is_string($item) && (strpos('js:', $item)===0))
-				$item = new JsExpression(substr($item,3));
-		});
 		if(!empty($this->init))
 			$init = strtr($this->init, [
 					'{id}'=>$id,

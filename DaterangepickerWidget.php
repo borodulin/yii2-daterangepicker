@@ -7,12 +7,12 @@
 
 namespace conquer\daterangepicker;
 
-use yii\helpers\Json;
 use yii\helpers\Html;
 use yii\web\JsExpression;
 use yii\helpers\ArrayHelper;
-use conquer\momentjs\MomentjsAsset;
 use yii\i18n\Formatter;
+use conquer\momentjs\MomentjsAsset;
+use conquer\helpers\Json;
 
 /**
  * @author Andrey Borodulin

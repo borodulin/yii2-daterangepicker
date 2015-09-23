@@ -32,14 +32,13 @@ class DaterangepickerWidget extends \yii\widgets\InputWidget
      * @link http://www.daterangepicker.com/#options
      * @var array()
      */
-    public $settings;
+    public $pluginOptions;
     
     /**
-     * @var array the HTML attributes for the input tag.
-     * @see \yii\helpers\Html::renderTagAttributes() for details on how attributes are being rendered.
+     * @see Html::input()
+     * @var string
      */
-    public $options = ['class'=>'pull-right', 'style'=>"background: #fff; cursor: pointer; padding: 5px 10px; border: 1px solid #ccc"];
-    
+    public $inputType = 'text';
     
     public $applyLabel = 'Submit';
     public $cancelLabel = 'Cancel';
@@ -47,24 +46,30 @@ class DaterangepickerWidget extends \yii\widgets\InputWidget
     public $toLabel = 'To';
     public $customRangeLabel = 'Custom';
     
-    public $ranges = [];
+    public $ranges;
     
     public $startDate = "js:moment().subtract(29, 'days')";
     public $endDate = "js:moment()";
-    
-    public $init = <<<JS
-$('#{id} span').html({start}.format('MMMM D, YYYY') + ' - ' + {end}.format('MMMM D, YYYY'));
-JS;
+
     
     public $onSelect = <<<JS
 function(start, end, label) {
-    $('#{start}').val(start.format('YYYY-MM-DDTHH:mm:ss'));
-    $('#{end}').val(end.format('YYYY-MM-DDTHH:mm:ss'));
-    $('#{id} span').html(start.format('MMMM D, YYYY') + ' - ' + end.format('MMMM D, YYYY'));
+    $('#{id}').val(start.format('L') + ' - ' + end.format('L'));
 }
 JS;
     
-    public $template = '<i class="glyphicon glyphicon-calendar fa fa-calendar"></i><span></span><b class="caret"></b>';
+    public $convertValue;
+    
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+        if (is_null($this->language)) {
+            $this->language = \Yii::$app->language;
+        }
+    }
     
     /**
      * @inheritdoc
@@ -73,53 +78,45 @@ JS;
     {
         $view = $this->view;
         $this->registerAssets($view);
-        if (!empty($this->settings)) {
-            $settings = ArrayHelper::merge($this->localeSettings(), $this->settings);
+        if ($this->language) {
+            $pluginOptions = ArrayHelper::merge($this->localeSettings(), $this->pluginOptions);
         }
-        if (empty($settings['ranges'])) {
-            $settings['ranges'] = $this->defaultRanges();
+        
+        if (is_array($this->ranges)) {
+            $pluginOptions['ranges'] = $this->ranges;
         }
-        $settings['startDate'] = $this->startDate;
-        $settings['endDate'] = $this->endDate;
+        
+        if (!isset($pluginOptions['ranges']) ) {
+            $pluginOptions['ranges'] = $this->defaultRanges();
+        }
+
+        
+        if ($this->hasModel()) {
+            echo Html::activeInput($this->inputType, $this->model, $this->attribute, $this->options);
+            $value = Html::getAttributeValue($this->model, $this->attribute);
+        } else {
+            echo Html::input($this->inputType, $this->model, $this->attribute, $this->options);
+            $value = $this->value;
+        }
+        if ($value) {
+            if (is_callable($this->convertValue)) {
+                $dates = call_user_func($this->convertValue, $value);
+            } else {
+                $dates = explode(' - ', $value);
+            }
+        } 
+        $pluginOptions['startDate'] = isset($dates[0]) ? $dates[0] : $this->startDate;
+        $pluginOptions['endDate'] = isset($dates[1]) ? $dates[1] : $this->endDate;
+
+        $pluginOptions = Json::encode($pluginOptions);
         
         $id = $this->options['id'];
-        if ($this->hasModel()) {
-            $value = Html::getAttributeValue($this->model, $this->attribute);
-            $name = Html::getInputName($this->model, $this->attribute);            
-        } else {
-            $name=$this->name;
-            $value=$this->value;
-        }
-        $formatter = \Yii::$app->formatter;
-        $settings['startDate'] = isset($value['start']) ? $formatter->asDatetime($value['start']) : $this->startDate;
-        $settings['endDate'] = isset($value['end']) ? $formatter->asDatetime($value['end']) : $this->endDate;
-
-        if (!empty($this->init)) {
-            $init = strtr($this->init, [
-                    '{id}' => $id,
-                    '{start}' => $settings['startDate'],
-                    '{end}' => $settings['endDate'],
-            ]);
-        } else {
-            $init = '';
-        }
-        $settings = Json::encode($settings);
-        
         if (!empty($this->onSelect)) {
-            $settings .= ','.strtr($this->onSelect, [
-                    '{start}' => "{$id}_start",
-                    '{end}' => "{$id}_end",
+            $pluginOptions .= ','.strtr($this->onSelect, [
                     '{id}' => $id,
             ]);
         }
-        $view->registerJs("$init\njQuery('#{$this->options['id']}').daterangepicker($settings);");
-        echo Html::beginTag('div', $this->options);
-        echo $this->template;
-        
-        echo Html::hiddenInput($name.'[start]', isset($value['start']) ? $value['start'] : null, ['id' => "{$id}_start"]);
-        echo Html::hiddenInput($name.'[end]', isset($value['end']) ? $value['end'] : null, ['id' => "{$id}_end"]);
-        
-        echo Html::endTag('div');
+        $view->registerJs("jQuery('#$id').daterangepicker($pluginOptions);");
     }
 
     
@@ -146,7 +143,6 @@ JS;
     public function localeSettings()
     {
         return [
-            'format' => MomentjsAsset::fromPhpFormat(\Yii::$app->formatter->dateFormat),
             'locale' => [
                 'applyLabel' => $this->applyLabel,
                 'cancelLabel' => $this->cancelLabel,

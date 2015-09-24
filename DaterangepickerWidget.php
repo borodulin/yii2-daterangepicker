@@ -58,7 +58,7 @@ function(start, end, label) {
 }
 JS;
     /**
-     * 
+     * Returns array of 2 elements. [0] - startDate, [1] - endDate
      * @var callable
      */
     public $convertValue;

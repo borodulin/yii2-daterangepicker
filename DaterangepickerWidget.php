@@ -57,7 +57,10 @@ function(start, end, label) {
     $('#{id}').val(start.format('L') + ' - ' + end.format('L'));
 }
 JS;
-    
+    /**
+     * 
+     * @var callable
+     */
     public $convertValue;
     
     /**

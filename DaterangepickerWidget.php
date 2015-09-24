@@ -30,7 +30,7 @@ class DaterangepickerWidget extends \yii\widgets\InputWidget
     /**
      * General Date Range Picker setting
      * @link http://www.daterangepicker.com/#options
-     * @var array()
+     * @var array
      */
     public $pluginOptions;
     

@@ -8,6 +8,7 @@
 namespace conquer\daterangepicker;
 
 use yii\helpers\Html;
+use yii\helpers\Json as DataJson;
 use yii\web\JsExpression;
 use yii\helpers\ArrayHelper;
 use yii\i18n\Formatter;
@@ -47,7 +48,12 @@ class DaterangepickerWidget extends \yii\widgets\InputWidget
     public $customRangeLabel = 'Custom';
     
     public $ranges;
-    
+
+    /**
+     * Initial dates used when the input has no value. Strings with the "js:" prefix are JavaScript expressions.
+     * Dates taken from the input value are always encoded as plain strings.
+     * @var string
+     */
     public $startDate = "js:moment().subtract(29, 'days')";
     public $endDate = "js:moment()";
 
@@ -81,8 +87,9 @@ JS;
     {
         $view = $this->view;
         $this->registerAssets($view);
+        $pluginOptions = (array)$this->pluginOptions;
         if ($this->language) {
-            $pluginOptions = ArrayHelper::merge($this->localeSettings(), $this->pluginOptions);
+            $pluginOptions = ArrayHelper::merge($this->localeSettings(), $pluginOptions);
         }
         
         if (is_array($this->ranges)) {
@@ -98,7 +105,7 @@ JS;
             echo Html::activeInput($this->inputType, $this->model, $this->attribute, $this->options);
             $value = Html::getAttributeValue($this->model, $this->attribute);
         } else {
-            echo Html::input($this->inputType, $this->model, $this->attribute, $this->options);
+            echo Html::input($this->inputType, $this->name, $this->value, $this->options);
             $value = $this->value;
         }
         if ($value) {
@@ -108,8 +115,9 @@ JS;
                 $dates = explode(' - ', $value);
             }
         } 
-        $pluginOptions['startDate'] = isset($dates[0]) ? $dates[0] : $this->startDate;
-        $pluginOptions['endDate'] = isset($dates[1]) ? $dates[1] : $this->endDate;
+        // the value comes from the user: never let it be interpreted as a "js:" expression
+        $pluginOptions['startDate'] = isset($dates[0]) ? new JsExpression(DataJson::htmlEncode((string)$dates[0])) : $this->startDate;
+        $pluginOptions['endDate'] = isset($dates[1]) ? new JsExpression(DataJson::htmlEncode((string)$dates[1])) : $this->endDate;
 
         $pluginOptions = Json::encode($pluginOptions);
         

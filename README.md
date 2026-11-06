@@ -6,8 +6,9 @@
 
 ## Description
 
-A JavaScript widget for choosing date ranges. 
-Designed to work with the Bootstrap CSS framework.
+A JavaScript widget for choosing date ranges.
+Designed to work with the Bootstrap CSS framework: include Bootstrap CSS in your layout
+(the widget no longer depends on `yiisoft/yii2-bootstrap`).
 For more information please visit [Date Range Picker](http://www.daterangepicker.com/) 
 
 ## Requirements
@@ -21,7 +22,7 @@ For more information please visit [Date Range Picker](http://www.daterangepicker
 Install the extension via [Composer](https://getcomposer.org):
 
 ```bash
-composer require conquer/daterangepicker:^1.1
+composer require conquer/daterangepicker:^1.2
 ```
 
 ## Usage
@@ -30,12 +31,17 @@ composer require conquer/daterangepicker:^1.1
 use conquer\daterangepicker\DaterangepickerWidget;
 
 $form->field($model, 'range')->widget(
-    DaterangepickerWidget::className(),
+    DaterangepickerWidget::class,
     [
         'language'=>'ru',
     ]
 );
 ```
+
+The input value (`start - end`) is used as the initial range; use `convertValue` to parse other formats.
+Dates taken from the value are always encoded as plain strings. Strings with the `js:` prefix are JavaScript
+expressions only in the widget configuration (`pluginOptions`, `ranges`, `startDate`, `endDate`):
+never put user data there.
 
 ## License
 

@@ -24,8 +24,11 @@ class DaterangepickerAsset extends \yii\web\AssetBundle
             'daterangepicker.js',
     ];
 
+    /**
+     * The picker does not need Bootstrap JavaScript; Bootstrap CSS is expected to be included by the application.
+     */
     public $depends = [
-            'yii\bootstrap\BootstrapPluginAsset',
+            'yii\web\JqueryAsset',
             'conquer\momentjs\MomentjsAsset'
     ];
 }

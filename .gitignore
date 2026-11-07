@@ -1,3 +1,6 @@
-/.project
 /.buildpath
+/composer.lock
+/.phpunit.result.cache
+/.project
 /.settings/
+/vendor/

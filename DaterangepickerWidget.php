@@ -58,11 +58,13 @@ class DaterangepickerWidget extends \yii\widgets\InputWidget
     public $endDate = "js:moment()";
 
     
-    public $onSelect = <<<JS
-function(start, end, label) {
-    $('#{id}').val(start.format('L') + ' - ' + end.format('L'));
-}
-JS;
+    /**
+     * JavaScript callback called when a range is selected: `function (start, end, label) {...}`.
+     * `{id}` is replaced with the id of the input escaped for a JavaScript string.
+     * The picker writes the selected range to the input itself, in its `format`.
+     * @var string|null
+     */
+    public $onSelect;
     /**
      * Returns array of 2 elements. [0] - startDate, [1] - endDate
      * @var callable
@@ -92,6 +94,11 @@ JS;
             $pluginOptions = ArrayHelper::merge($this->localeSettings(), $pluginOptions);
         }
         
+        if (!isset($pluginOptions['format'])) {
+            // the format of the moment.js locale, e.g. DD.MM.YYYY for ru: the picker parses and writes the input value in it
+            $pluginOptions['format'] = new JsExpression("moment.localeData().longDateFormat('L')");
+        }
+
         if (is_array($this->ranges)) {
             $pluginOptions['ranges'] = $this->ranges;
         }
@@ -121,13 +128,13 @@ JS;
 
         $pluginOptions = Json::encode($pluginOptions);
         
-        $id = $this->options['id'];
+        $id = DataJson::htmlEncode((string)$this->options['id']);
         if (!empty($this->onSelect)) {
-            $pluginOptions .= ','.strtr($this->onSelect, [
-                    '{id}' => $id,
+            $pluginOptions .= ',' . strtr($this->onSelect, [
+                '{id}' => substr($id, 1, -1),
             ]);
         }
-        $view->registerJs("jQuery('#$id').daterangepicker($pluginOptions);");
+        $view->registerJs("jQuery(document.getElementById($id)).daterangepicker($pluginOptions);");
     }
 
     

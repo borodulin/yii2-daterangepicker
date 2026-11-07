@@ -2,6 +2,7 @@
 
 [![Latest Version](https://img.shields.io/packagist/v/conquer/daterangepicker.svg)](https://packagist.org/packages/conquer/daterangepicker)
 [![Total Downloads](https://img.shields.io/packagist/dt/conquer/daterangepicker.svg)](https://packagist.org/packages/conquer/daterangepicker)
+[![CI](https://github.com/borodulin/yii2-daterangepicker/actions/workflows/ci.yml/badge.svg?branch=1.x)](https://github.com/borodulin/yii2-daterangepicker/actions/workflows/ci.yml)
 [![License](https://img.shields.io/packagist/l/conquer/daterangepicker.svg)](LICENSE)
 
 ## Description
@@ -38,7 +39,12 @@ $form->field($model, 'range')->widget(
 );
 ```
 
+This is the 1.x branch (Date Range Picker 1.3, Moment.js 2.9). Version 2 uses Date Range Picker 3.1
+and any Moment.js 2.x: see the master branch.
+
 The input value (`start - end`) is used as the initial range; use `convertValue` to parse other formats.
+Dates are parsed and written in the date format of the Moment.js locale (`L`: `DD.MM.YYYY` for `ru`,
+`MM/DD/YYYY` for `en`); set `pluginOptions['format']` to use another one.
 Dates taken from the value are always encoded as plain strings. Strings with the `js:` prefix are JavaScript
 expressions only in the widget configuration (`pluginOptions`, `ranges`, `startDate`, `endDate`):
 never put user data there.

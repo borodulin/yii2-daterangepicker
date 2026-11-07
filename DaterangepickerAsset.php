@@ -7,28 +7,46 @@
 
 namespace conquer\daterangepicker;
 
+use yii\web\AssetBundle;
+
 /**
+ * Date Range Picker 3
+ *
+ * The picker has its own styles and does not need Bootstrap.
+ *
+ * @link https://www.daterangepicker.com/
  * @author Andrey Borodulin
  */
-class DaterangepickerAsset extends \yii\web\AssetBundle
+class DaterangepickerAsset extends AssetBundle
 {
-    // The files are not web directory accessible, therefore we need
-    // to specify the sourcePath property. Notice the @bower alias used.
+    /**
+     * @inheritdoc
+     */
     public $sourcePath = '@bower/bootstrap-daterangepicker';
-    
-    public $css = [
-            'daterangepicker-bs3.css',
-    ];
-    
-    public $js = [
-            'daterangepicker.js',
+
+    /**
+     * @inheritdoc
+     */
+    public $css = ['daterangepicker.css'];
+
+    /**
+     * @inheritdoc
+     */
+    public $js = ['daterangepicker.js'];
+
+    /**
+     * @inheritdoc
+     */
+    public $publishOptions = [
+        'only' => ['daterangepicker.js', 'daterangepicker.css'],
+        'except' => ['/example/', '/website/'],
     ];
 
     /**
-     * The picker does not need Bootstrap JavaScript; Bootstrap CSS is expected to be included by the application.
+     * @inheritdoc
      */
     public $depends = [
-            'yii\web\JqueryAsset',
-            'conquer\momentjs\MomentjsAsset'
+        'yii\web\JqueryAsset',
+        'conquer\momentjs\MomentjsAsset',
     ];
 }

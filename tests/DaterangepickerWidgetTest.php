@@ -54,7 +54,7 @@ class DaterangepickerWidgetTest extends TestCase
 
     private function script($html)
     {
-        $this->assertSame(1, preg_match('#jQuery\(document\.getElementById\((.+?)\)\)\.daterangepicker\((.*)\);\n#', $html, $m), $html);
+        $this->assertSame(1, preg_match('#jQuery\(document\.getElementById\((.+?)\)\)\.daterangepicker\((\{.*?\})(?=\)|,function)#', $html, $m), $html);
         return $m;
     }
 
@@ -64,31 +64,72 @@ class DaterangepickerWidgetTest extends TestCase
         $this->assertSame('<input type="text" id="w0" name="range" value="01.11.2026 - 05.11.2026">', $widget);
         $m = $this->script($html);
         $this->assertSame('"w0"', $m[1]);
-        // the picker parses and writes the value in the format of the locale
-        $this->assertStringContainsString('"format":moment.localeData().longDateFormat(\'L\')', $m[2]);
-        $this->assertStringContainsString('"startDate":"01.11.2026","endDate":"05.11.2026"', $m[2]);
-        $this->assertStringContainsString('"firstDay":moment.localeData().firstDayOfWeek()', $m[2]);
-        // no callback overwriting the value in another format
-        $this->assertStringEndsWith('}', $m[2]);
+        // the format, days and months come from the Moment.js locale
+        $this->assertStringStartsWith('{"locale":{"applyLabel":"Применить","cancelLabel":"Отмена","customRangeLabel":"Другой период"},"ranges":{"Сегодня":[moment().startOf(\'day\'), moment()],"Вчера":', $m[2]);
+        $this->assertStringContainsString('"Прошлый месяц":[moment().subtract(1, \'month\')', $m[2]);
+        $this->assertStringEndsWith('"startDate":"01.11.2026","endDate":"05.11.2026"}', $m[2]);
+        // the value is not empty: the picker updates it
+        $this->assertStringNotContainsString('autoUpdateInput', $html);
+        $this->assertStringNotContainsString('apply.daterangepicker', $html);
         $this->assertMatchesRegularExpression('#/locale/ru\.js"#', $html);
         $this->assertStringContainsString('moment.locale("ru");', $html);
+        preg_match('#href="/assets/(\w+)/daterangepicker\.css"#', $html, $a);
+        $this->assertSame(['daterangepicker.css', 'daterangepicker.js'], array_values(array_diff(scandir($this->assetPath . '/' . $a[1]), ['.', '..'])));
+    }
+
+    public function testEmptyInputIsFilledOnApply()
+    {
+        list(, $html) = $this->render(['name' => 'range', 'language' => 'en-US']);
+        $m = $this->script($html);
+        $this->assertStringStartsWith('{"locale":{"applyLabel":"Apply","cancelLabel":"Cancel","customRangeLabel":"Custom Range"},"ranges":{"Today":', $m[2]);
+        $this->assertStringEndsWith('"startDate":moment().subtract(29, \'days\'),"endDate":moment(),"autoUpdateInput":false}', $m[2]);
+        $this->assertStringContainsString("}).on('apply.daterangepicker', function (e, picker) {", $html);
+        $this->assertStringContainsString('moment.locale("en-US");', $html);
     }
 
     public function testModel()
     {
-        $model = new DynamicModel(['range' => '11/01/2026 - 11/05/2026']);
-        list($widget, $html) = $this->render(['model' => $model, 'attribute' => 'range', 'language' => false, 'pluginOptions' => ['format' => 'MM/DD/YYYY']]);
-        $this->assertSame('<input type="text" id="dynamicmodel-range" name="DynamicModel[range]" value="11/01/2026 - 11/05/2026">', $widget);
+        $model = new DynamicModel(['range' => '2026-11-01 ~ 2026-11-05']);
+        list($widget, $html) = $this->render([
+            'model' => $model,
+            'attribute' => 'range',
+            'ranges' => false,
+            'applyLabel' => 'OK',
+            'pluginOptions' => ['locale' => ['format' => 'YYYY-MM-DD', 'separator' => ' ~ ', 'cancelLabel' => 'Clear'], 'autoUpdateInput' => false],
+        ]);
+        $this->assertSame('<input type="text" id="dynamicmodel-range" name="DynamicModel[range]" value="2026-11-01 ~ 2026-11-05">', $widget);
         $m = $this->script($html);
-        $this->assertStringStartsWith('{"format":"MM/DD/YYYY","ranges":', $m[2]);
-        $this->assertStringContainsString('"startDate":"11\\/01\\/2026","endDate":"11\\/05\\/2026"', $m[2]);
+        $this->assertSame('{"locale":{"applyLabel":"OK","cancelLabel":"Clear","customRangeLabel":"Другой период","format":"YYYY-MM-DD","separator":" ~ "},"autoUpdateInput":false,"startDate":"2026-11-01","endDate":"2026-11-05"}', $m[2]);
+        $this->assertStringNotContainsString('apply.daterangepicker', $html);
     }
 
-    public function testEmptyValueUsesDefaultDates()
+    public function testSingleDatePicker()
     {
+        list(, $html) = $this->render(['name' => 'date', 'value' => '01.11.2026', 'pluginOptions' => ['singleDatePicker' => true]]);
+        $this->assertStringContainsString('"startDate":"01.11.2026","endDate":"01.11.2026"}', $this->script($html)[2]);
+    }
+
+    public function testLanguageFalseKeepsMomentLocale()
+    {
+        MomentjsAsset::$language = 'de';
+        list(, $html) = $this->render(['name' => 'range', 'language' => false]);
+        $this->assertStringContainsString('moment.locale("de");', $html);
+        // the labels use the language of the application
+        $this->assertStringContainsString('"applyLabel":"Применить"', $html);
+    }
+
+    public function testApplicationTranslationsAreKept()
+    {
+        Yii::$app->i18n->translations['conquer/daterangepicker'] = [
+            'class' => 'yii\i18n\PhpMessageSource',
+            'basePath' => __DIR__,
+            'forceTranslation' => true,
+            'on missingTranslation' => function ($event) {
+                $event->translatedMessage = '[' . $event->message . ']';
+            },
+        ];
         list(, $html) = $this->render(['name' => 'range']);
-        $m = $this->script($html);
-        $this->assertStringContainsString('"startDate":moment().subtract(29, \'days\'),"endDate":moment()', $m[2]);
+        $this->assertStringContainsString('"applyLabel":"[Apply]"', $html);
     }
 
     public function testValueIsNotJavaScript()
@@ -105,6 +146,7 @@ class DaterangepickerWidgetTest extends TestCase
     {
         list($widget, $html) = $this->render([
             'name' => 'range',
+            'value' => '01.11.2026 - 05.11.2026',
             'options' => ['id' => "a').length;alert(1);jQuery('#a"],
             'onSelect' => "function () { console.log('{id}'); }",
         ]);
